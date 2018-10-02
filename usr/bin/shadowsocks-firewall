@@ -1,0 +1,35 @@
+#!/bin/sh
+
+#echo "Inside" >> /tmp/a.txt
+#ls -l /usr/sbin >> /tmp/a.txt
+
+/usr/sbin/iptables -t nat -N SS
+/usr/sbin/iptables -t nat -A SS -p tcp -j REDIRECT --to-ports 1080
+
+/usr/sbin/iptables -t nat -N Normal
+/usr/sbin/iptables -t nat -A Normal -d 103.41.132.25/32 -j RETURN
+# Hong Kong BK data center
+/usr/sbin/iptables -t nat -A Normal -d 205.177.132.160/27 -j RETURN
+/usr/sbin/iptables -t nat -A Normal -d 59.40.79.210/32 -j RETURN
+
+# Guest wifi network
+/usr/sbin/iptables -t nat -A Normal -s 192.168.94.0/24 -j RETURN
+
+/usr/sbin/iptables -t nat -A Normal -d 202.177.192.103/32 -j SS
+/usr/sbin/iptables -t nat -A Normal -d 93.46.8.89/32 -j SS
+/usr/sbin/iptables -t nat -A Normal -d 17.252.204.136/32 -j SS
+/usr/sbin/iptables -t nat -A Normal -d 174.36.210.55/32 -j SS
+
+/usr/sbin/iptables -t nat -A Normal -m geoip --dst-cc HK -j SS
+/usr/sbin/iptables -t nat -A Normal -m geoip --dst-cc FR -j SS
+/usr/sbin/iptables -t nat -A Normal -m geoip --dst-cc US -j SS
+/usr/sbin/iptables -t nat -A Normal -m geoip --dst-cc GB -j SS
+/usr/sbin/iptables -t nat -A Normal -m geoip --dst-cc JP -j SS
+/usr/sbin/iptables -t nat -A Normal -m geoip --dst-cc IE -j SS
+# Germany
+/usr/sbin/iptables -t nat -A Normal -m geoip --dst-cc DE -j SS
+
+# for chromecast hardcoded 8.8.8.8 DNS
+/usr/sbin/iptables -t nat -A PREROUTING -i br-lan -p udp -d 8.8.8.8 --dport 53 -j REDIRECT --to-port 7913
+
+iptables -t nat -A PREROUTING -p tcp -j Normal
